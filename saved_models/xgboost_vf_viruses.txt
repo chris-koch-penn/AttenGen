@@ -1,0 +1,12 @@
+              precision    recall  f1-score   support
+
+           0       0.84      0.83      0.83        82
+           1       0.83      0.84      0.84        82
+
+    accuracy                           0.84       164
+   macro avg       0.84      0.84      0.84       164
+weighted avg       0.84      0.84      0.84       164
+
+Confusion Matrix (Non-virulent, Virulent): 
+[[68, 14],
+ [13, 69]]

@@ -1,0 +1,4 @@
+biopython==1.76
+propy3==1.0.0a2
+scikitlearn==0.22
+joblib==0.15.1
