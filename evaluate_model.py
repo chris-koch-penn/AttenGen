@@ -1,6 +1,6 @@
 import joblib
 import pickle
-from xgboost import load_pvictors as load
+from xgboost import load_victors, run_on_cpu
 import numpy as np
 from pathlib import Path
 import random
@@ -17,11 +17,11 @@ def write_results(file_name, y_test, y_pred_test):
 
 def load_data(p1, p2):
     # Load data and models.
-    base = Path("../data/proteins/xy_feature_data/")
-    uniprot, bacteria, viruses = load(base)
-    xgb, scores = joblib.load(p1), joblib.load(p2)
-    print(xgb.best_params_)
-    print(xgb.best_score_)
+    base = Path("./data")
+    uniprot, bacteria, viruses = load_victors(base)
+    xgb, scores = run_on_cpu(joblib.load(p1)), joblib.load(p2)
+    print("Best parameters: ", xgb.best_params_)
+    print("Best AUC on 5 fold cross-validation: ", xgb.best_score_)
     return xgb, uniprot, bacteria, viruses
 
 

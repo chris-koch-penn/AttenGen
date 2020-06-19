@@ -1,5 +1,5 @@
 # Chris Koch, 2020.
-from genetic_algo_lib import GA as genetic_alg
+from genetic_algorithm_lib import GA as genetic_alg
 import numpy as np
 from propy.PyPro import GetProDes
 from collections import Counter
@@ -97,16 +97,16 @@ def callback_generation(GA):
     print(f"Fitness    = {GA.best_solution()[1]}")
 
 
-def ALGO(generations, pop_size, ga_util_obj: GA_utils):
+def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
     # Creating an instance of the Genetic Algorithm.
     initial_pop = [np.copy(ga_util_obj.concatenated_genes)
                    for i in range(pop_size)]
     GA = genetic_alg(num_generations=generations,
-                     num_parents_mating=5,
+                     num_parents_mating=num_parents_mating,
                      fitness_func=fitness_func,
                      initial_population=initial_pop,
                      parent_selection_type="rank",
-                     keep_parents=5,
+                     keep_parents=num_parents_mating,
                      crossover_type="two_points",
                      mutation_type="swap",
                      mutation_num_genes=1,
@@ -135,22 +135,20 @@ def ALGO(generations, pop_size, ga_util_obj: GA_utils):
 
 
 def run_GA(victors_scores, protegen_scores, victors_model_path,
-           protegen_model_path, genome_path, num_generations, pop_size):
+           protegen_model_path, genome_path, num_generations, pop_size, num_parents_mating):
     ga_util_obj = GA_utils(victors_scores, protegen_scores,
                            victors_model_path, protegen_model_path, genome_path)
-    ALGO(num_generations, pop_size, ga_util_obj)
+    ALGO(num_generations, pop_size, num_parents_mating, ga_util_obj)
 
 
 if __name__ == "__main__":
-    victors_scores = Path(
-        "../models/xgboost_output/victors_xgboost_scores.joblib")
-    protegen_scores = Path(
-        "../models/xgboost_output/protegen_xgboost_scores.joblib")
-    victors_model_path = "../models/xgboost_output/victors_xgboost_model.joblib"
-    protegen_model_path = "../models/xgboost_output/protegen_xgboost_model.joblib"
-    covid_genome_path = "../../data/covid19_coding_sequences.fna"
+    victors_scores = "./saved_models/victors_xgboost_scores.joblib"
+    protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
+    victors_model_path = "./saved_models/victors_xgboost_model.joblib"
+    protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
+    covid_genome_path = "./data/covid19_coding_sequences.fna"
     start = time.time()
     run_GA(victors_scores, protegen_scores, victors_model_path,
-           protegen_model_path, covid_genome_path, 3, 15)
+           protegen_model_path, covid_genome_path, 3, 10, 5)
     end = time.time()
     print("ELAPSED TIME: ", end - start)
