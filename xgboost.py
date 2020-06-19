@@ -1,3 +1,4 @@
+# Chris Koch, 2020. Model adapted from VaxignML by Edison Ong.
 import numpy as np
 from xgboost import XGBClassifier
 from sklearn.pipeline import Pipeline

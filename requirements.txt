@@ -1,4 +1,7 @@
 biopython==1.76
 propy3==1.0.0a2
-scikitlearn==0.22
+NumPy>=1.13.3
+SciPy>=0.19.1
+threadpoolctl>=2.0.0
 joblib==0.15.1
+scikitlearn==0.23
