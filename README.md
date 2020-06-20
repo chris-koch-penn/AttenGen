@@ -3,7 +3,10 @@
 AttenGen uses machine learning and genetic algorithms to generate candidate vaccines. It produces live attenuated vaccine candidates by reducing the number of virulence factors and strengthening or maintaining the number of protective antigens while making as few edits to the genome as possible. An improvement in the quantitative fitness of vaccine candidates can be seen with only a few mutations, and large improvements can be seen after tens of mutations. The vaccines can then be synthesized using techniques from [synthetic genomics](https://en.wikipedia.org/wiki/Synthetic_genomics) and recombinant DNA methods and then experimentally tested to see if they display attenuation and an immunogenic response.
 
 ## Steps to Recreate the Paper
-### Install and Setup
+
+If you want to recreate the paper, follow all of the steps below. If you just want to generate vaccines for any virus or bacteria of interest, follow the [Install and Setup](#install) instructions then skip to the [Generating Vaccine Candidates](#vaxcandidates) section.
+
+### <a name="install"></a>Install and Setup
 Install [Blast+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download) and [Anaconda or Miniconda](https://docs.anaconda.com/anaconda/install/). Run the commands in `setup.sh` to create your conda environment and install all dependencies.
 
 Unzip data1.zip, data2.zip, data3.zip, data4.zip, and feature_vectors.zip. Merge the contents of data1, data2, data3, and data4 into a new folder called data (data was split into multiple zip files to circumvent github's max file size).
@@ -24,11 +27,11 @@ Now the model is ready to be trained. To do this, run `python xgboost_train.py`.
 
 Run `python evaluate_model.py` to print the parameters of the best trained model and the best AUC achieved using 5-fold cross-validation. This script will also test the model on the holdout dataset and produce 4 files containing metrics and confusion matrices. Note that although the Protegen WF1 score was 0.61 for viruses, the precision for the virus class was high at 0.93. This is the type of error we would rather have. This means the classifier is still usable for generating vaccine candidates because if it says something is a protective viral antigen, it likely is (with 93% precision) so the fitness function of the genetic algorithm is more likely to underestimate the fitness of a sample rather than overestimate it. In short, samples deemed fit by the genetic algorithm are likely even stronger vaccine candidates than the algorithm says they are.
 
-### Generating Vaccine Candidates
+### <a name="vaxcandidates"></a>Generating Vaccine Candidates
 
 Run `python genetic_algorithm.py` to start generating Covid-19 vaccine candidates. A file graphing the fitness vs generation will be saved in this directiory and the most fit samples will be saved as a pickled object. To generate vaccines with your own data for a different virus or bacteria, copy a FASTA file containing all DNA coding-sequences of the pathogen into the data folder. The following function can be called from your own script using custom parameters if you want to experiment with different population and generation sizes. Note that the number of generations is the maximum number of mutations any given sample will have. Limiting the number of generations can be used to maintain genetic similarity to the original pathogen.
 
-```
+```python
 from genetic_algorithm import run_GA
 
 victors_scores = "./saved_models/victors_xgboost_scores.joblib"
@@ -36,5 +39,6 @@ protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
 victors_model_path = "./saved_models/victors_xgboost_model.joblib"
 protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
 genome_path = "PATH TO CODING SEQUENCES FOR YOUR PATHOGEN"
-run_GA(victors_scores, protegen_scores, victors_model_path, protegen_model_path, genome_path, num_generations, pop_size)
+run_GA(victors_scores, protegen_scores, victors_model_path, 
+protegen_model_path, genome_path, num_generations, pop_size)
 ```
