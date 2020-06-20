@@ -124,14 +124,16 @@ def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
     print(f"Parameters of the best solution : {solution}")
     print(f"Fitness value of the best solution = {solution_fitness}")
     print(f"Index of the best solution : {solution_idx}")
-    print(f"Predicted output based on the best solution : {prediction}")
     if GA.best_solution_generation != -1:
         print(f"Best fitness value reached after \
             {GA.best_solution_generation} generations.")
 
     # Save the GA instance.
-    pickle.dump((solution, solution_fitness), open("./best_sol.pkl", "wb"))
     GA.save("./GA")
+    pickle.dump((solution, solution_fitness),
+                open("./best_solution.pkl", "wb"))
+    pickle.dump(GA.top_ten_solutions, open(
+        "./best_ten_solutions.pkl", "wb"))
 
 
 def run_GA(victors_scores, protegen_scores, victors_model_path,
@@ -149,6 +151,6 @@ if __name__ == "__main__":
     covid_genome_path = "./data/covid19_coding_sequences.fna"
     start = time.time()
     run_GA(victors_scores, protegen_scores, victors_model_path,
-           protegen_model_path, covid_genome_path, 3, 10, 5)
+           protegen_model_path, covid_genome_path, 2, 50, 20)
     end = time.time()
     print("ELAPSED TIME: ", end - start)
