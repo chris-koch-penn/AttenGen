@@ -129,11 +129,14 @@ def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
             {GA.best_solution_generation} generations.")
 
     # Save the GA instance.
-    GA.save("./GA")
-    pickle.dump((solution, solution_fitness),
-                open("./best_solution.pkl", "wb"))
-    pickle.dump(GA.top_ten_solutions, open(
-        "./best_ten_solutions.pkl", "wb"))
+    # GA.save("./GA") # This file contains all solutions and GA parameters, but is often large.
+    output = Path("./genetic_algorithm_output")
+    output.mkdir(parents=True, exist_ok=True)
+    suffix = f"{generations}gens_{pop_size}pop.pkl"
+    f1 = output / ("best_solution_" + suffix)
+    f2 = output / ("best_ten_solutions_" + suffix)
+    # pickle.dump((solution_fitness, solution), open(f1, "wb"))
+    pickle.dump(GA.top_ten_solutions, open(f2, "wb"))
 
 
 def run_GA(victors_scores, protegen_scores, victors_model_path,
@@ -149,8 +152,13 @@ if __name__ == "__main__":
     victors_model_path = "./saved_models/victors_xgboost_model.joblib"
     protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
     covid_genome_path = "./data/covid19_coding_sequences.fna"
+    # victors_scores = "./victors_xgboost_scores.joblib"
+    # protegen_scores = "./protegen_xgboost_scores.joblib"
+    # victors_model_path = "./victors_xgboost_model.joblib"
+    # protegen_model_path = "./protegen_xgboost_model.joblib"
+    # covid_genome_path = "./covid19_coding_sequences.fna"
     start = time.time()
     run_GA(victors_scores, protegen_scores, victors_model_path,
-           protegen_model_path, covid_genome_path, 2, 50, 20)
+           protegen_model_path, covid_genome_path, 25, 10000, 100)
     end = time.time()
     print("ELAPSED TIME: ", end - start)
