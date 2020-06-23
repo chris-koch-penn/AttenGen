@@ -30,24 +30,12 @@ class GA_utils:
         self.protegen_score_counts = Counter(self.sorted_protegen_scores)
         self.protegen_model = joblib.load(protegen_model_path)
         self.victors_model = joblib.load(victors_model_path)
-        self.run_on_cpu(self.protegen_model)
-        self.run_on_cpu(self.victors_model)
+        run_on_cpu(self.protegen_model)
+        run_on_cpu(self.victors_model)
         seqs = [str(s.seq) for s in SeqIO.parse(fasta, "fasta")]
-        self.create_gene_start_end_idxs(seqs)
+        self.gene_start_end_idxs = create_gene_start_end_idxs(seqs)
         self.concatenated_genes = [item for seq in seqs for item in seq]
         self.DNA_TO_FITNESS_MAP = dict()
-
-    def run_on_cpu(self, gridsearchcv):
-        model = gridsearchcv.estimator.steps[1][1]
-        model = model.set_params(predictor='cpu_predict')
-        model = model.set_params(tree_method='hist')
-
-    def encode_protein(self, seq):
-        return [self.AMINO_ACID_MAP[c] for c in list(seq)]
-
-    def decode_protein(self, seq):
-        dec_seq = [self.INDICES_TO_AMINO_ACIDS[c] for c in list(seq) if c != 0]
-        return "".join(dec_seq)
 
     def calc_percentile(self, score, sorted_arr, count_set):
         rank = np.searchsorted(sorted_arr, score) + 1
@@ -70,15 +58,23 @@ class GA_utils:
             vf_res, self.sorted_victors_scores, self.victors_score_counts)
         protegenicity = self.calc_percentile(
             protegen_res,  self.sorted_protegen_scores, self.protegen_score_counts)
-        return - quantitative_virulence + protegenicity
+        return (-quantitative_virulence, protegenicity)
 
-    def create_gene_start_end_idxs(self, seqs):
-        self.gene_start_end_idxs = []
-        start, end = 0, 0
-        for gene in seqs:
-            end = start + len(gene)
-            self.gene_start_end_idxs.append((start, end))
-            start = end
+
+def create_gene_start_end_idxs(seqs):
+    gene_start_end_idxs = []
+    start, end = 0, 0
+    for gene in seqs:
+        end = start + len(gene)
+        gene_start_end_idxs.append((start, end))
+        start = end
+    return gene_start_end_idxs
+
+
+def run_on_cpu(gridsearchcv):
+    model = gridsearchcv.estimator.steps[1][1]
+    model = model.set_params(predictor='cpu_predict')
+    model = model.set_params(tree_method='hist')
 
 
 def dna_to_protein(seq):
@@ -88,8 +84,8 @@ def dna_to_protein(seq):
 def fitness_func(ga_util, solution, solution_idx):
     genes = [solution[start:end]
              for start, end in ga_util.gene_start_end_idxs]
-    output = [ga_util.get_gene_fitness("".join(gene)) for gene in genes]
-    return sum(output)
+    output = [ga_util.get_gene_fitness(gene) for gene in genes]
+    return sum([item for item in output])
 
 
 def callback_generation(GA):
@@ -120,7 +116,6 @@ def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
 
     # Returning the details of the best solution.
     solution, solution_fitness, solution_idx = GA.best_solution()
-    prediction = fitness_func(ga_util_obj, solution, solution_idx)
     print(f"Parameters of the best solution : {solution}")
     print(f"Fitness value of the best solution = {solution_fitness}")
     print(f"Index of the best solution : {solution_idx}")
@@ -147,18 +142,18 @@ def run_GA(victors_scores, protegen_scores, victors_model_path,
 
 
 if __name__ == "__main__":
-    victors_scores = "./saved_models/victors_xgboost_scores.joblib"
-    protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
-    victors_model_path = "./saved_models/victors_xgboost_model.joblib"
-    protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
-    covid_genome_path = "./data/covid19_coding_sequences.fna"
     # victors_scores = "./victors_xgboost_scores.joblib"
     # protegen_scores = "./protegen_xgboost_scores.joblib"
     # victors_model_path = "./victors_xgboost_model.joblib"
     # protegen_model_path = "./protegen_xgboost_model.joblib"
     # covid_genome_path = "./covid19_coding_sequences.fna"
+    victors_scores = "./saved_models/victors_xgboost_scores.joblib"
+    protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
+    victors_model_path = "./saved_models/victors_xgboost_model.joblib"
+    protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
+    covid_genome_path = "./data/covid19_coding_sequences.fna"
     start = time.time()
     run_GA(victors_scores, protegen_scores, victors_model_path,
-           protegen_model_path, covid_genome_path, 25, 10000, 100)
+           protegen_model_path, covid_genome_path, 25, 1000, 10)
     end = time.time()
     print("ELAPSED TIME: ", end - start)

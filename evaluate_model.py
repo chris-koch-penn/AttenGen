@@ -1,6 +1,7 @@
 import joblib
 import pickle
-from xgboost import load_victors, run_on_cpu
+from xgboost_train import load_victors
+from genetic_algorithm import run_on_cpu
 import numpy as np
 from pathlib import Path
 import random
