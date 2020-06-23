@@ -36,15 +36,26 @@ def decode_solution_to_unfiltered_genes(gene_start_end_idxs, solution):
 def analyze_mutations(original_genes, mutated_genes, fasta):
     ga_util_obj = create_GA_util_obj(fasta)
     og = [ga_util_obj.get_gene_fitness(gene) for gene in original_genes]
-    mut = [ga_util_obj.get_gene_fitness(gene) for gene in mutated_genes]
+    mut = [ga_util_obj.get_gene_fitness(
+        gene.replace("*", "")) for gene in mutated_genes]
     plot(og, mut)
 
 
 def plot(original_fitness_vals, mutated_fitness_vals):
     fig = plt.figure()
+    width = 0.35
+    inds = np.arange(len(original_fitness_vals))
     ax = fig.add_axes([0, 0, 1, 1])
-    ax.bar(list(range(len(original_fitness_vals))), original_fitness_vals)
+    ax.bar(inds, [-x for x, y in original_fitness_vals], width, color="blue")
+    ax.bar(inds + width,
+           [-x for x, y in mutated_fitness_vals], width, color="green")
     plt.show()
+    # ax2 = fig.add_axes([0, 0, 1, 1])
+    # ax2.bar(inds, [y for x, y in original_fitness_vals], width, color="blue")
+    # ax2.bar(inds + width,
+    #         [y for x, y in mutated_fitness_vals], width, color="green")
+    # plt.show()
+    exit()
 
 
 def write_solutions(base, fasta, top_ten_solutions):
@@ -85,10 +96,6 @@ def write_report(top_ten, fasta):
     print(avg_mutations, avg_stop_codons)
 
 
-def analyze_stop_codons():
-    pass
-
-
 def create_GA_util_obj(genome_path):
     victors_scores = "./saved_models/victors_xgboost_scores.joblib"
     protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
@@ -101,7 +108,7 @@ def create_GA_util_obj(genome_path):
 if __name__ == "__main__":
     base = Path("./genetic_algorithm_output")
     fasta = Path("./data/covid19_coding_sequences.fna")
-    input_path = base / "best_ten_solutions_25gens_10000pop.pkl"
+    input_path = base / "best_ten_solutions_25gens_100pop.pkl"
     top_ten_solutions = pickle.load(open(input_path, "rb"))
     # top_ten_solutions = write_solutions(base, fasta, input_path)
     write_report(top_ten_solutions, fasta)

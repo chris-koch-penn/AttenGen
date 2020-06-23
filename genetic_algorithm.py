@@ -12,6 +12,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
 import time
+THRESHOLD = 0.70
 
 
 class GA_utils:
@@ -53,12 +54,13 @@ class GA_utils:
         features.update(Des.GetQSO())
         features = np.array([list(features.values())])
         vf_res = self.victors_model.predict_proba(features)[0][1]
-        protegen_res = self.protegen_model.predict_proba(features)[0][1]
+        # protegen_res = self.protegen_model.predict_proba(features)[0][1]
         quantitative_virulence = self.calc_percentile(
             vf_res, self.sorted_victors_scores, self.victors_score_counts)
-        protegenicity = self.calc_percentile(
-            protegen_res,  self.sorted_protegen_scores, self.protegen_score_counts)
-        return (-quantitative_virulence, protegenicity)
+        # protegenicity = self.calc_percentile(
+        #     protegen_res,  self.sorted_protegen_scores, self.protegen_score_counts)
+        quantitative_virulence = 0 if quantitative_virulence < THRESHOLD else quantitative_virulence
+        return (-quantitative_virulence, 0)  # protegenicity)
 
 
 def create_gene_start_end_idxs(seqs):
@@ -78,14 +80,14 @@ def run_on_cpu(gridsearchcv):
 
 
 def dna_to_protein(seq):
-    return Seq(seq, generic_dna).translate()[:-1]
+    return Seq("".join(seq), generic_dna).translate()[:-1]
 
 
 def fitness_func(ga_util, solution, solution_idx):
     genes = [solution[start:end]
              for start, end in ga_util.gene_start_end_idxs]
     output = [ga_util.get_gene_fitness(gene) for gene in genes]
-    return sum([item for item in output])
+    return sum([qv + p for qv, p in output])
 
 
 def callback_generation(GA):
@@ -142,18 +144,18 @@ def run_GA(victors_scores, protegen_scores, victors_model_path,
 
 
 if __name__ == "__main__":
-    # victors_scores = "./victors_xgboost_scores.joblib"
-    # protegen_scores = "./protegen_xgboost_scores.joblib"
-    # victors_model_path = "./victors_xgboost_model.joblib"
-    # protegen_model_path = "./protegen_xgboost_model.joblib"
-    # covid_genome_path = "./covid19_coding_sequences.fna"
-    victors_scores = "./saved_models/victors_xgboost_scores.joblib"
-    protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
-    victors_model_path = "./saved_models/victors_xgboost_model.joblib"
-    protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
-    covid_genome_path = "./data/covid19_coding_sequences.fna"
+    victors_scores = "./victors_xgboost_scores.joblib"
+    protegen_scores = "./protegen_xgboost_scores.joblib"
+    victors_model_path = "./victors_xgboost_model.joblib"
+    protegen_model_path = "./protegen_xgboost_model.joblib"
+    covid_genome_path = "./covid19_coding_sequences.fna"
+    # victors_scores = "./saved_models/victors_xgboost_scores.joblib"
+    # protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
+    # victors_model_path = "./saved_models/victors_xgboost_model.joblib"
+    # protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
+    # covid_genome_path = "./data/covid19_most_virulent_3genes.fna"
     start = time.time()
     run_GA(victors_scores, protegen_scores, victors_model_path,
-           protegen_model_path, covid_genome_path, 25, 1000, 10)
+           protegen_model_path, covid_genome_path, 25, 50000, 500)
     end = time.time()
     print("ELAPSED TIME: ", end - start)
