@@ -1,5 +1,4 @@
 import numpy as np
-from Bio import pairwise2
 import pickle
 from pathlib import Path
 from Bio import SeqIO
@@ -8,6 +7,8 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from genetic_algorithm import create_gene_start_end_idxs, GA_utils
 import matplotlib.pyplot as plt
+from matplotlib import pylab
+import os
 
 
 def filter_stop_codons(gene):
@@ -18,7 +19,8 @@ def filter_stop_codons(gene):
 
 def substitute_stop_codons(gene):
     codons = ["".join(gene[i:i+3]) for i in range(0, len(gene), 3)]
-    temp = ["***" if c in ["TAG", "TAA", "TGA"] else c for c in codons[:-1]]
+    temp = [("***" if c in {"TAG", "TAA", "TGA"} else c)
+            for c in codons[:-1]]
     res = "".join(temp + [codons[-1]])
     return res
 
@@ -38,24 +40,25 @@ def analyze_mutations(original_genes, mutated_genes, fasta):
     og = [ga_util_obj.get_gene_fitness(gene) for gene in original_genes]
     mut = [ga_util_obj.get_gene_fitness(
         gene.replace("*", "")) for gene in mutated_genes]
-    plot(og, mut)
+    plot_quantitative_virulence(og, mut)
 
 
-def plot(original_fitness_vals, mutated_fitness_vals):
-    fig = plt.figure()
+def plot_quantitative_virulence(original_fitness_vals, mutated_fitness_vals):
+    fig, ax = plt.subplots(figsize=(8, 5))
     width = 0.35
     inds = np.arange(len(original_fitness_vals))
-    ax = fig.add_axes([0, 0, 1, 1])
     ax.bar(inds, [-x for x, y in original_fitness_vals], width, color="blue")
     ax.bar(inds + width,
            [-x for x, y in mutated_fitness_vals], width, color="green")
+    ax.legend(("Original Sequence", "Mutated Sequence"))
+    fig.suptitle(
+        "Quantitative Virulence Before and After Attenuation by Genetic Algorithm")
+    pylab.xlabel("Coding DNA Sequences, in Order of Appearance in Genome")
+    pylab.ylabel("Quantitative Virulence")
+    plt.xticks([0, 1, 2], [1, 2, 3])
+    plt.xlabel(
+        "Coding DNA Sequences in Order of Appearance in Genome")
     plt.show()
-    # ax2 = fig.add_axes([0, 0, 1, 1])
-    # ax2.bar(inds, [y for x, y in original_fitness_vals], width, color="blue")
-    # ax2.bar(inds + width,
-    #         [y for x, y in mutated_fitness_vals], width, color="green")
-    # plt.show()
-    exit()
 
 
 def write_solutions(base, fasta, top_ten_solutions):
@@ -72,28 +75,13 @@ def write_solutions(base, fasta, top_ten_solutions):
             f"vaccine_candidates/solution_rank_{count}_fitness_{f}.fasta"
         SeqIO.write(records, open(path, "w"), "fasta")
         count += 1
-    return top_ten_solutions
 
 
-def write_report(top_ten, fasta):
-    original_genes = [seq for fid, seq in SimpleFastaParser(open(fasta))]
-    gene_start_end_idxs = create_gene_start_end_idxs(original_genes)
-    avg_mutations, avg_stop_codons = 0, 0
-    for _, solution in top_ten:
-        mutated_genes = decode_solution_to_unfiltered_genes(
-            gene_start_end_idxs, solution)
-        num_mutations = []
-        stop_codons = []
-        for g1, g2 in zip(original_genes, mutated_genes):
-            stop_codons.append(g2.count("*") / 3)
-            mutations = sum([1 for c1, c2 in zip(g1, g2) if c1 != c2])
-            num_mutations.append(mutations)
-        avg_mutations += sum(num_mutations)
-        avg_stop_codons += sum(stop_codons)
-        analyze_mutations(original_genes, mutated_genes, fasta)
-    avg_mutations /= 10
-    avg_stop_codons /= 10
-    print(avg_mutations, avg_stop_codons)
+def write_blast_report(base, dir1, f1):
+    f1 = "./data/covid19_most_virulent_3genes.fna"
+    f2 = Path(dir1) / os.listdir(dir1)[-1]
+    cmd = f"blastn -query {f1} -subject {f2} -outfmt 7 -out {base}/blast.txt"
+    os.system(cmd)
 
 
 def create_GA_util_obj(genome_path):
@@ -107,10 +95,9 @@ def create_GA_util_obj(genome_path):
 
 if __name__ == "__main__":
     base = Path("./genetic_algorithm_output")
-    fasta = Path("./data/covid19_coding_sequences.fna")
-    input_path = base / "best_ten_solutions_25gens_100pop.pkl"
+    fasta = Path("./data/covid19_most_virulent_3genes.fna")
+    input_path = base / "best_ten_solutions_150gens_10000pop_1000mates.pkl"
+    output_dir = base / "vaccine_candidates"
     top_ten_solutions = pickle.load(open(input_path, "rb"))
-    # top_ten_solutions = write_solutions(base, fasta, input_path)
-    write_report(top_ten_solutions, fasta)
-    # output = Path("./genetic_algorithm_output")
-    # output.mkdir(parents=True, exist_ok=True)
+    write_solutions(base, fasta, top_ten_solutions)
+    write_blast_report(base, output_dir, fasta)

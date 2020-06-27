@@ -1,0 +1,21 @@
+# BLASTN 2.10.0+
+# Query: lcl|NC_045512.2_cds_YP_009724389.1_1 [gene=ORF1ab] [locus_tag=GU280_gp01] [db_xref=GeneID:43740578] [protein=ORF1ab polyprotein] [exception=ribosomal slippage] [protein_id=YP_009724389.1] [location=join(266..13468,13468..21555)] [gbkey=CDS]
+# Database: User specified sequence set (Input: genetic_algorithm_output\vaccine_candidates\solution_rank_9_fitness_-2.18001.fasta)
+# Fields: query acc.ver, subject acc.ver, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
+# 2 hits found
+lcl|NC_045512.2_cds_YP_009724389.1_1	lcl|NC_045512.2_cds_YP_009724389.1_1	99.281	21291	135	6	1	21291	1	21273	0.0	38453
+lcl|NC_045512.2_cds_YP_009724389.1_1	lcl|NC_045512.2_cds_YP_009725295.1_2	99.213	13219	82	8	1	13219	1	13197	0.0	23815
+# BLASTN 2.10.0+
+# Query: lcl|NC_045512.2_cds_YP_009725295.1_2 [gene=ORF1ab] [locus_tag=GU280_gp01] [db_xref=GeneID:43740578] [protein=ORF1a polyprotein] [protein_id=YP_009725295.1] [location=266..13483] [gbkey=CDS]
+# Database: User specified sequence set (Input: genetic_algorithm_output\vaccine_candidates\solution_rank_9_fitness_-2.18001.fasta)
+# Fields: query acc.ver, subject acc.ver, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
+# 2 hits found
+lcl|NC_045512.2_cds_YP_009725295.1_2	lcl|NC_045512.2_cds_YP_009724389.1_1	99.236	13219	94	3	1	13218	1	13213	0.0	23845
+lcl|NC_045512.2_cds_YP_009725295.1_2	lcl|NC_045512.2_cds_YP_009725295.1_2	99.221	13218	82	7	1	13218	1	13197	0.0	23819
+# BLASTN 2.10.0+
+# Query: lcl|NC_045512.2_cds_YP_009724390.1_3 [gene=S] [locus_tag=GU280_gp02] [db_xref=GeneID:43740568] [protein=surface glycoprotein] [protein_id=YP_009724390.1] [location=21563..25384] [gbkey=CDS]
+# Database: User specified sequence set (Input: genetic_algorithm_output\vaccine_candidates\solution_rank_9_fitness_-2.18001.fasta)
+# Fields: query acc.ver, subject acc.ver, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
+# 1 hits found
+lcl|NC_045512.2_cds_YP_009724390.1_3	lcl|NC_045512.2_cds_YP_009724390.1_3	99.346	3820	19	2	3	3822	3	3816	0.0	6911
+# BLAST processed 3 queries

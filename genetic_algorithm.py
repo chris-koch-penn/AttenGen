@@ -12,7 +12,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
 import time
-THRESHOLD = 0.70
+import sys
 
 
 class GA_utils:
@@ -38,11 +38,6 @@ class GA_utils:
         self.concatenated_genes = [item for seq in seqs for item in seq]
         self.DNA_TO_FITNESS_MAP = dict()
 
-    def calc_percentile(self, score, sorted_arr, count_set):
-        rank = np.searchsorted(sorted_arr, score) + 1
-        frequency = count_set.get(score, 0)
-        return (rank + (0.5 * frequency)) / len(sorted_arr)
-
     def get_gene_fitness(self, gene):
         protein = dna_to_protein(gene)
         protein = "".join([c for c in protein if c != "*"])
@@ -54,13 +49,18 @@ class GA_utils:
         features.update(Des.GetQSO())
         features = np.array([list(features.values())])
         vf_res = self.victors_model.predict_proba(features)[0][1]
-        # protegen_res = self.protegen_model.predict_proba(features)[0][1]
-        quantitative_virulence = self.calc_percentile(
+        protegen_res = self.protegen_model.predict_proba(features)[0][1]
+        quantitative_virulence = calc_percentile(
             vf_res, self.sorted_victors_scores, self.victors_score_counts)
-        # protegenicity = self.calc_percentile(
-        #     protegen_res,  self.sorted_protegen_scores, self.protegen_score_counts)
-        quantitative_virulence = 0 if quantitative_virulence < THRESHOLD else quantitative_virulence
-        return (-quantitative_virulence, 0)  # protegenicity)
+        protegenicity = calc_percentile(
+            protegen_res,  self.sorted_protegen_scores, self.protegen_score_counts)
+        return (-quantitative_virulence, protegenicity)
+
+
+def calc_percentile(score, sorted_arr, count_set):
+    rank = np.searchsorted(sorted_arr, score) + 1
+    frequency = count_set.get(score, 0)
+    return (rank + (0.5 * frequency)) / len(sorted_arr)
 
 
 def create_gene_start_end_idxs(seqs):
@@ -105,7 +105,8 @@ def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
                      initial_population=initial_pop,
                      parent_selection_type="rank",
                      keep_parents=num_parents_mating,
-                     crossover_type="two_points",
+                     #  crossover_type="two_points",
+                     crossover_type="single_point",
                      mutation_type="swap",
                      mutation_num_genes=1,
                      callback_generation=callback_generation,
@@ -113,8 +114,6 @@ def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
 
     # Running the GA to optimize the parameters of the function.
     GA.run()
-    GA.plot_result(
-        title=f"Generation vs. Fitness for Population of {pop_size}",  show_plot=False)
 
     # Returning the details of the best solution.
     solution, solution_fitness, solution_idx = GA.best_solution()
@@ -129,10 +128,12 @@ def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
     # GA.save("./GA") # This file contains all solutions and GA parameters, but is often large.
     output = Path("./genetic_algorithm_output")
     output.mkdir(parents=True, exist_ok=True)
-    suffix = f"{generations}gens_{pop_size}pop.pkl"
-    f1 = output / ("best_solution_" + suffix)
-    f2 = output / ("best_ten_solutions_" + suffix)
-    # pickle.dump((solution_fitness, solution), open(f1, "wb"))
+    params = f"{generations}gens_{pop_size}pop_{num_parents_mating}mates"
+    GA.plot_result(
+        title=f"Generation vs. Fitness for Population of {pop_size}",
+        show_plot=False, path="graph_" + params + ".png")
+    f1 = output / ("best_solution_" + params + ".pkl")
+    f2 = output / ("best_ten_solutions_" + params + ".pkl")
     pickle.dump(GA.top_ten_solutions, open(f2, "wb"))
 
 
@@ -144,18 +145,24 @@ def run_GA(victors_scores, protegen_scores, victors_model_path,
 
 
 if __name__ == "__main__":
-    victors_scores = "./victors_xgboost_scores.joblib"
-    protegen_scores = "./protegen_xgboost_scores.joblib"
-    victors_model_path = "./victors_xgboost_model.joblib"
-    protegen_model_path = "./protegen_xgboost_model.joblib"
-    covid_genome_path = "./covid19_coding_sequences.fna"
-    # victors_scores = "./saved_models/victors_xgboost_scores.joblib"
-    # protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
-    # victors_model_path = "./saved_models/victors_xgboost_model.joblib"
-    # protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
-    # covid_genome_path = "./data/covid19_most_virulent_3genes.fna"
+    if len(sys.argv) < 4:
+        raise Exception(
+            "Need pop size, number of parents to mate, and generations passed as command args.")
+    pop_size = int(sys.argv[1])
+    num_parents = int(sys.argv[2])
+    gens = int(sys.argv[3])
+    # victors_scores = "./victors_xgboost_scores.joblib"
+    # protegen_scores = "./protegen_xgboost_scores.joblib"
+    # victors_model_path = "./victors_xgboost_model.joblib"
+    # protegen_model_path = "./protegen_xgboost_model.joblib"
+    # covid_genome_path = "./covid19_most_virulent_3genes.fna"
+    victors_scores = "./saved_models/victors_xgboost_scores.joblib"
+    protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
+    victors_model_path = "./saved_models/victors_xgboost_model.joblib"
+    protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
+    covid_genome_path = "./data/covid19_most_virulent_3genes.fna"
     start = time.time()
     run_GA(victors_scores, protegen_scores, victors_model_path,
-           protegen_model_path, covid_genome_path, 25, 50000, 500)
+           protegen_model_path, covid_genome_path, gens, pop_size, num_parents)
     end = time.time()
     print("ELAPSED TIME: ", end - start)
