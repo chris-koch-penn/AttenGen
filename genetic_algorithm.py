@@ -105,7 +105,6 @@ def ALGO(generations, pop_size, num_parents_mating, ga_util_obj: GA_utils):
                      initial_population=initial_pop,
                      parent_selection_type="rank",
                      keep_parents=num_parents_mating,
-                     #  crossover_type="two_points",
                      crossover_type="single_point",
                      mutation_type="swap",
                      mutation_num_genes=1,
@@ -151,11 +150,6 @@ if __name__ == "__main__":
     pop_size = int(sys.argv[1])
     num_parents = int(sys.argv[2])
     gens = int(sys.argv[3])
-    # victors_scores = "./victors_xgboost_scores.joblib"
-    # protegen_scores = "./protegen_xgboost_scores.joblib"
-    # victors_model_path = "./victors_xgboost_model.joblib"
-    # protegen_model_path = "./protegen_xgboost_model.joblib"
-    # covid_genome_path = "./covid19_most_virulent_3genes.fna"
     victors_scores = "./saved_models/victors_xgboost_scores.joblib"
     protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
     victors_model_path = "./saved_models/victors_xgboost_model.joblib"
