@@ -49,12 +49,12 @@ class GA_utils:
         features.update(Des.GetQSO())
         features = np.array([list(features.values())])
         vf_res = self.victors_model.predict_proba(features)[0][1]
-        protegen_res = self.protegen_model.predict_proba(features)[0][1]
+        # protegen_res = self.protegen_model.predict_proba(features)[0][1]
         quantitative_virulence = calc_percentile(
             vf_res, self.sorted_victors_scores, self.victors_score_counts)
-        protegenicity = calc_percentile(
-            protegen_res,  self.sorted_protegen_scores, self.protegen_score_counts)
-        return (-quantitative_virulence, protegenicity)
+        # protegenicity = calc_percentile(
+        # protegen_res,  self.sorted_protegen_scores, self.protegen_score_counts)
+        return (-quantitative_virulence, 0)
 
 
 def calc_percentile(score, sorted_arr, count_set):

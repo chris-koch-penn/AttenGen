@@ -2,6 +2,8 @@
 
 AttenGen uses machine learning and genetic algorithms to generate candidate vaccines. It produces live attenuated vaccine candidates by reducing the number of virulence factors and strengthening or maintaining the number of protective antigens while making as few edits to the genome as possible. An improvement in the quantitative fitness of vaccine candidates can be seen with only a few mutations, and large improvements can be seen after tens of mutations. The vaccines can then be synthesized using techniques from [synthetic genomics](https://en.wikipedia.org/wiki/Synthetic_genomics) and recombinant DNA methods and then experimentally tested to see if they display attenuation and an immunogenic response.
 
+"Modulating the abundance of viral gene expression to achieve suitable immunogenicity while limiting virus replication, dissemination, and injury is an essential element of an optimally attenuated virus." - Parks et al., DOI: 10.1128/JVI.75.2.910-920.2001
+
 ## Steps to Recreate the Paper
 
 If you want to recreate the paper, follow all of the steps below. If you just want to generate vaccines for any virus or bacteria of interest, follow the [Install and Setup](#install) instructions then skip to the [Generating Vaccine Candidates](#vaxcandidates) section.
