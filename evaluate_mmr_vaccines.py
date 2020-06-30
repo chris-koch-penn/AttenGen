@@ -13,19 +13,18 @@ from evaluate_ga_output import create_GA_util_obj
 
 
 def fn(x, y):
-    return -x
+    return -x  # if -x < 0.5 else 0
 
 
 def plot_quantitative_virulence(original_fitness_vals, mutated_fitness_vals):
-    print("QV: ", sum([fn(x, y) for x, y in original_fitness_vals]),
-          sum([fn(x, y) for x, y in mutated_fitness_vals]))
+    original_fitness_vals = [fn(x, y) for x, y in original_fitness_vals]
+    mutated_fitness_vals = [fn(x, y) for x, y in mutated_fitness_vals]
+    print("QV: ", sum(original_fitness_vals), sum(mutated_fitness_vals))
     fig, ax = plt.subplots(figsize=(8, 5))
     width = 0.35
     inds = np.arange(len(original_fitness_vals))
-    ax.bar(inds, [fn(x, y) for x, y in original_fitness_vals],
-           width, color="blue")
-    ax.bar(inds + width,
-           [fn(x, y) for x, y in mutated_fitness_vals], width, color="green")
+    ax.bar(inds, original_fitness_vals, width, color="blue")
+    ax.bar(inds + width, mutated_fitness_vals, width, color="green")
     ax.legend(("Original Sequence", "Mutated Sequence"))
     fig.suptitle(
         "Quantitative Virulence Before and After Attenuation by Genetic Algorithm")
@@ -53,10 +52,12 @@ def generate_quantitative_virulence_graph1(fasta1, fasta2):
     og = [ga_util_obj.get_gene_fitness(gene)for gene in og][:min_len]
     mut1 = [ga_util_obj.get_gene_fitness(
         substitute_ambiguous_symbols(gene)) for gene in mut1][:min_len]
-    no_of_decreased_virulence_seqs = sum(
-        [1 for x, y in zip(og, mut1) if fn(x[0], x[1]) > fn(y[0], y[1])])
-    no_of_increased_virulence_seqs = sum(
-        [1 for x, y in zip(og, mut1) if fn(x[0], x[1]) < fn(y[0], y[1])])
+    # no_of_decreased_virulence_seqs = sum(
+    #     [1 for x, y in zip(og, mut1) if fn(x[0], x[1]) > fn(y[0], y[1])])
+    # no_of_increased_virulence_seqs = sum(
+    #     [1 for x, y in zip(og, mut1) if fn(x[0], x[1]) < fn(y[0], y[1])])
+    # print("Number of decreased: ", no_of_decreased_virulence_seqs)
+    # print("Number of increased: ", no_of_increased_virulence_seqs)
     plot_quantitative_virulence(og, mut1)
 
 
@@ -84,7 +85,7 @@ def mumps():
     S79_major_vaccine = Path("./data/mumps/S79_major_vaccine.fna")
     zagreb_vaccine = Path("./data/mumps/zagreb_vaccine.fna")
 
-    # Graph rubella strains.
+    # Graph mumps strains.
     generate_quantitative_virulence_graph1(mumps_ODATE3, jeryl_lynn_minor)
     generate_quantitative_virulence_graph1(mumps_ODATE3, jeryl_lynn_major)
     generate_quantitative_virulence_graph1(mumps_ODATE3, S79_minor_vaccine)
