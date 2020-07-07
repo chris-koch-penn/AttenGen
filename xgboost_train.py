@@ -9,6 +9,8 @@ import joblib
 from pathlib import Path
 import pickle
 import sys
+from sklearn.preprocessing import MinMaxScaler
+
 
 def load_victors(base):
     uniprot = pickle.load(open(base / "victors_uniprot.pkl", "rb"))
@@ -42,17 +44,17 @@ def train_model(IS_VICTORS):
     est = None
     if train_on == "cpu":
         est = XGBClassifier(objective='binary:logistic', nthread=15,
-                        eval_metric='auc', random_state=26)
+                            eval_metric='auc', random_state=26)
     else:
         est = XGBClassifier(objective='binary:logistic', nthread=15,
                             eval_metric='auc', random_state=26,
                             tree_method='gpu_hist', predictor='gpu_predictor')
     estPipe = Pipeline(
-        [('feature_selection', SelectKBest()), ('classification', est)])
+        [('feature_selection', SelectKBest()), ("scale", MinMaxScaler(feature_range=(0, 1))), ('classification', est)])
     grid = [{
-        "feature_selection__k": [90, 120, 150, 180, 210, 240],
+        "feature_selection__k": [110, 130, 150, 180, 210, 240],
         'classification__learning_rate': [0.3, 0.1],
-        'classification__n_estimators': [150, 180, 210, 240],
+        'classification__n_estimators': [60, 80, 100, 120, 140, 160],
         'classification__max_depth': [3, 6, 9],
         'classification__min_child_weight': [1, 3],
         'classification__scale_pos_weight': [1, 6],
@@ -62,8 +64,9 @@ def train_model(IS_VICTORS):
     # Train model.
     print("Training model...")
     prefix = "victors" if IS_VICTORS else "protegen"
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=12)
-    xgb = GridSearchCV(estimator=estPipe, param_grid=grid, cv=cv, verbose=1)
+    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=12)
+    xgb = GridSearchCV(estimator=estPipe, param_grid=grid,
+                       cv=cv, verbose=1, scoring="f1_weighted")
     xgb.fit(x_train, y_train)
     y_prob = xgb.predict_proba(x_train)
     joblib.dump(xgb, f"./saved_models/{prefix}_xgboost_model.joblib")
@@ -73,4 +76,5 @@ def train_model(IS_VICTORS):
 if __name__ == "__main__":
     IS_VICTORS, IS_PROTEGEN = True, False
     train_model(IS_VICTORS)
-    train_model(IS_PROTEGEN)
+    # train_model(IS_PROTEGEN)
+    # train_model(IS_VICTORS)

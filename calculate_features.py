@@ -22,7 +22,7 @@ def get_descriptor(accession_no, seq):
         return None
 
 
-def run_descriptor(input_fasta, output_dir, max_num_samples=5000):
+def run_descriptor(input_fasta, output_dir, max_num_samples=6000):
     output_dir.mkdir(parents=True, exist_ok=True)
     vals = SeqIO.parse(input_fasta, "fasta")
     print("done parsing fasta")

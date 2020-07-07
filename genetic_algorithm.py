@@ -31,8 +31,8 @@ class GA_utils:
         self.protegen_score_counts = Counter(self.sorted_protegen_scores)
         self.protegen_model = joblib.load(protegen_model_path)
         self.victors_model = joblib.load(victors_model_path)
-        run_on_cpu(self.protegen_model)
-        run_on_cpu(self.victors_model)
+        # run_on_cpu(self.protegen_model)
+        # run_on_cpu(self.victors_model)
         seqs = [str(s.seq) for s in SeqIO.parse(fasta, "fasta")]
         self.gene_start_end_idxs = create_gene_start_end_idxs(seqs)
         self.concatenated_genes = [item for seq in seqs for item in seq]
