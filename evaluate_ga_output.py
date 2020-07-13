@@ -49,7 +49,7 @@ def plot_quantitative_virulence(original_fitness_vals, mutated_fitness_vals):
     plt.xticks(range(len(original_fitness_vals)),
                range(1, 1 + len(original_fitness_vals)))
     plt.xlabel(
-        "Coding DNA Sequences in Order of Appearance in Genome")
+        "Coding Sequences in Order of Appearance in Genome")
     plt.show()
     print("Quantitative virulence values after mutation: ", mutated_fitness_vals)
 
@@ -60,9 +60,9 @@ def plot_intial_quantitative_virulence(original_fitness_vals):
     inds = np.arange(len(original_fitness_vals))
     ax.bar(inds, [-x for x, y in original_fitness_vals], width, color="blue")
     fig.suptitle(
-        "Initial Quantitative Virulence of Covid-19 Coding DNA Sequences")
+        "Initial Quantitative Virulence of Covid-19 Coding Sequences")
     plt.xlabel(
-        "Coding DNA Sequences in Order of Appearance in Genome")
+        "Coding Sequences in Order of Appearance in Genome")
     pylab.ylabel("Quantitative Virulence")
     plt.xticks(range(len(original_fitness_vals)),
                range(1, 1 + len(original_fitness_vals)))
@@ -113,8 +113,8 @@ def generate_quantitative_virulence_graph2(solution, fasta):
 
 
 def create_GA_util_obj(genome_path):
-    victors_scores = "./saved_models/victors_xgboost_scores.joblib"
-    victors_model_path = "./saved_models/victors_xgboost_model.joblib"
+    victors_scores = "./saved_models/victors_xgboost_scores_auc1.joblib"
+    victors_model_path = "./saved_models/victors_xgboost_model_auc1.joblib"
     protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
     protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
     return GA_utils(victors_scores, protegen_scores,
@@ -125,11 +125,11 @@ if __name__ == "__main__":
     base = Path("./genetic_algorithm_output")
     most_virulent_fasta = Path("./data/covid19_most_virulent_3genes.fna")
     full_fasta = Path("./data/covid19_coding_sequences.fna")
+    generate_quantitative_virulence_graph1(full_fasta)
     input_path = base / "best_ten_solutions_150gens_10000pop_1000mates.pkl"
     output_dir = base / "vaccine_candidates"
     top_ten_solutions = pickle.load(open(input_path, "rb"))
     best_sol = top_ten_solutions[0][1]
     write_solutions(base, most_virulent_fasta, top_ten_solutions)
     write_blast_report(base, output_dir, most_virulent_fasta)
-    generate_quantitative_virulence_graph1(full_fasta)
     generate_quantitative_virulence_graph2(best_sol, most_virulent_fasta)

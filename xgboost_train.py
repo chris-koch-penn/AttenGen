@@ -2,7 +2,6 @@
 import numpy as np
 from xgboost import XGBClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.feature_selection import SelectKBest
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 import joblib
@@ -50,11 +49,12 @@ def train_model(IS_VICTORS):
                             eval_metric='auc', random_state=26,
                             tree_method='gpu_hist', predictor='gpu_predictor')
     estPipe = Pipeline(
-        [('feature_selection', SelectKBest()), ("scale", MinMaxScaler(feature_range=(0, 1))), ('classification', est)])
+        [('feature_selection', SelectKBest()), ('classification', est)])
     grid = [{
-        "feature_selection__k": [110, 130, 150, 180, 210, 240],
+        # "feature_selection__k": [110, 130, 150, 180, 210, 240],
+        "feature_selection__k": [240, 280, 320, 360, 400, 440],
         'classification__learning_rate': [0.3, 0.1],
-        'classification__n_estimators': [60, 80, 100, 120, 140, 160],
+        'classification__n_estimators': [80, 100, 120, 140, 160, 300, 1000],
         'classification__max_depth': [3, 6, 9],
         'classification__min_child_weight': [1, 3],
         'classification__scale_pos_weight': [1, 6],
@@ -66,7 +66,7 @@ def train_model(IS_VICTORS):
     prefix = "victors" if IS_VICTORS else "protegen"
     cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=12)
     xgb = GridSearchCV(estimator=estPipe, param_grid=grid,
-                       cv=cv, verbose=1, scoring="f1_weighted")
+                       cv=cv, verbose=1)
     xgb.fit(x_train, y_train)
     y_prob = xgb.predict_proba(x_train)
     joblib.dump(xgb, f"./saved_models/{prefix}_xgboost_model.joblib")
@@ -77,4 +77,3 @@ if __name__ == "__main__":
     IS_VICTORS, IS_PROTEGEN = True, False
     train_model(IS_VICTORS)
     # train_model(IS_PROTEGEN)
-    # train_model(IS_VICTORS)
