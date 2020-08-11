@@ -1,25 +1,22 @@
 # Chris Koch, 2020.
 from Bio import SearchIO, SeqIO
+from io import StringIO
+from pathlib import Path
+
+PCT_IDENTITY_THRESHOLD = 30
 
 
-def process_blast_output_dir(path):
+def process_blast_output(query_results):
     hit_set = set()
-    try:
-        print("here")
-        qresult = SearchIO.read(path, 'blast-tab', comments=True)
-        print(qresult)
-        print(qresult.hits)
-        print(len(qresult.hits))
-        print(len(qresult.hits.hsps))
-        return
-        for a in qresult:
-            print(a)
-            return
-        hit_set.update(
-            [q.id for q in qresult.hits if q.hsps[0].ident_pct > 30])
-    except Exception as e:
-        print(e)
-        pass
+    for query_res in query_results:
+        try:
+            f = StringIO(query_res)
+            qresult = SearchIO.read(f, 'blast-tab', comments=True)
+            hit_set.update(
+                [hit.id for hit in qresult.hits if hit.hsps[0].ident_pct > PCT_IDENTITY_THRESHOLD])
+        except Exception as e:
+            print(e)
+            pass
     return hit_set
 
 
@@ -29,18 +26,26 @@ def filter_fasta(input_file, output_file, exclusion_set):
     SeqIO.write(records, output_file, "fasta")
 
 
-def split_files():
-    starts_with = "# Query"
+def extract_query_results(path):
+    with open(path, "r") as f:
+        text = f.read()
+        sep = "# BLASTP"
+        queries = [sep + query for query in text.split(sep)]
+        return queries[1:]
 
 
 if __name__ == "__main__":
-    path1 = "./data/blast_output/victors_all"
-    path2 = "./data/blast_output/protegen_bacteria_proteins"
-    path3 = "./data/blast_output/protegen_virus_proteins"
-    set1 = process_blast_output_dir(path1)
-    set2 = process_blast_output_dir(path2) | process_blast_output_dir(path3)
+    query_results1 = extract_query_results("./data/blast_output/victors_all")
+    query_results2 = extract_query_results(
+        "./data/blast_output/protegen_bacteria_proteins")
+    query_results3 = extract_query_results(
+        "./data/blast_output/protegen_virus_proteins")
+    set1 = process_blast_output(query_results1)
+    set2 = process_blast_output(
+        query_results2) | process_blast_output(query_results3)
     input1 = "./data/uniprot_sprot.fasta"
     output1 = "./data/filtered/victors_filtered_uniprot.faa"
     output2 = "./data/filtered/protegen_filtered_uniprot.faa"
+    Path("./data/filtered").mkdir(parents=True, exist_ok=True)
     filter_fasta(input1, output1, set1)
     filter_fasta(input1, output2, set2)

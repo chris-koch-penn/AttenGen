@@ -36,6 +36,10 @@ def train_model(IS_VICTORS):
         vf_bacteria["x_train"] + vf_viruses["x_train"]
     y_train = uniprot["y_train"] + \
         vf_bacteria["y_train"] + vf_viruses["y_train"]
+    # sample_rate = 10
+    # l1 = len(vf_viruses["x_train"]) * sample_rate
+    # x_train = uniprot["x_train"][:l1] + vf_viruses["x_train"]
+    # y_train = uniprot["y_train"][:l1] + vf_viruses["y_train"]
     x_train, y_train = np.asarray(x_train), np.asarray(y_train)
 
     # Declare model and pipeline.
@@ -51,10 +55,9 @@ def train_model(IS_VICTORS):
     estPipe = Pipeline(
         [('feature_selection', SelectKBest()), ('classification', est)])
     grid = [{
-        # "feature_selection__k": [110, 130, 150, 180, 210, 240],
-        "feature_selection__k": [240, 280, 320, 360, 400, 440],
+        "feature_selection__k": [110, 130, 150, 180, 210, 240],
         'classification__learning_rate': [0.3, 0.1],
-        'classification__n_estimators': [80, 100, 120, 140, 160, 300, 1000],
+        'classification__n_estimators': [100, 120, 140, 160, 200],
         'classification__max_depth': [3, 6, 9],
         'classification__min_child_weight': [1, 3],
         'classification__scale_pos_weight': [1, 6],
@@ -64,7 +67,7 @@ def train_model(IS_VICTORS):
     # Train model.
     print("Training model...")
     prefix = "victors" if IS_VICTORS else "protegen"
-    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=12)
+    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=12)
     xgb = GridSearchCV(estimator=estPipe, param_grid=grid,
                        cv=cv, verbose=1)
     xgb.fit(x_train, y_train)

@@ -113,8 +113,8 @@ def generate_quantitative_virulence_graph2(solution, fasta):
 
 
 def create_GA_util_obj(genome_path):
-    victors_scores = "./saved_models/victors_xgboost_scores_auc1.joblib"
-    victors_model_path = "./saved_models/victors_xgboost_model_auc1.joblib"
+    victors_scores = "./saved_models/victors_xgboost_scores.joblib"
+    victors_model_path = "./saved_models/victors_xgboost_model.joblib"
     protegen_scores = "./saved_models/protegen_xgboost_scores.joblib"
     protegen_model_path = "./saved_models/protegen_xgboost_model.joblib"
     return GA_utils(victors_scores, protegen_scores,
