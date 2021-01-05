@@ -4,6 +4,8 @@ AttenGen uses machine learning and genetic algorithms to generate candidate vacc
 
 "Modulating the abundance of viral gene expression to achieve suitable immunogenicity while limiting virus replication, dissemination, and injury is an essential element of an optimally attenuated virus." - Parks et al., DOI: 10.1128/JVI.75.2.910-920.2001
 
+A preprint of the paper is available [here](https://chriskoch.science/assets/pdfs/attengen.pdf).
+
 ## Steps to Recreate the Paper
 
 If you want to recreate the paper, follow all of the steps below. If you just want to generate vaccines for any virus or bacteria of interest, follow the [Install and Setup](#install) instructions then skip to the [Generating Vaccine Candidates](#vaxcandidates) section.
